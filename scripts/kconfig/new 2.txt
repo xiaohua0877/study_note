@@ -1,0 +1,3 @@
+ print(("{}  {}  --line:{}--").format(self.srctree,filename,sys._getframe().f_lineno,filename))
+ 
+  print(("{}  {}  --line:{}--").format(self.srctree,filename,sys._getframe().f_lineno))
