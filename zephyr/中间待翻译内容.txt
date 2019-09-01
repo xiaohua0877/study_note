@@ -1,0 +1,142 @@
+Parses 's', returning a None-terminated list of tokens. Registers any new symbols encountered with _lookup(_const)_sym().
+
+Tries to be reasonably speedy by processing chunks of text via regexes and string operations where possible. This is the biggest hotspot during parsing.
+
+Note: It might be possible to rewrite this to 'yield' tokens instead,working across multiple lines. The 'option env' lookback thing below complicates things though.
+
+Python lstrip() 方法用于截掉字符串左边的空格或指定字符。
+Python isspace() 方法检测字符串是否只由空格组成。
+
+Import more CMake functions and macros
+
+Find tools
+
+导入更多CMake函数和宏
+
+  查找工具
+
+The BOARD can be set by 3 sources. Through environment variables, through the cmake CLI, and through CMakeLists.txt.
+
+BOARD可以由3个来源设置。 通过环境变量，通过cmake CLI，以及通过CMakeLists.txt。
+
+
+The SHIELD can be set by 3 sources. Through environment variables,through the cmake CLI, and through CMakeLists.txt.
+
+CLI has the highest precedence, then comes environment variables,and then finally CMakeLists.txt.
+
+SHIELD可以由3个来源设置。 通过环境变量，通过cmake CLI，以及通过CMakeLists.txt。
+
+CLI具有最高优先级，然后是环境变量，最后是CMakeLists.txt。
+
+
+Use BOARD to search for a '_defconfig' file.
+e.g. zephyr/boards/arm/96b_carbon_nrf51/96b_carbon_nrf51_defconfig.
+When found, use that path to infer the ARCH we are building for.
+使用BOARD搜索“_defconfig”文件。
+例如和风/板/臂/96b_carbon_nrf51/96b_carbon_nrf51_defconfig。
+找到后，使用该路径推断我们正在构建的ARCH。 
+
+DTC_OVERLAY_FILE has either been specified on the cmake CLI or is already in the CMakeCache.txt. This has precedence over the environment variable DTC_OVERLAY_FILE 
+
+DTC_OVERLAY_FILE已在cmake CLI上指定或已在CMakeCache.txt中。 这优先于环境变量DTC_OVERLAY_FILE
+
+
+Prevent CMake from testing the toolchain
+
+防止CMake测试工具链
+
+
+DTS should be close to kconfig because CONFIG_ variables from kconfig and dts should be available at the same time.
+
+The DT system uses a C preprocessor for it's code generation needs.
+This creates an awkward chicken-and-egg problem, because we don't  always know exactly which toolchain the user needs until we know  more about the target, e.g. after DT and Kconfig.
+
+To resolve this we find "some" C toolchain, configure it generically with the minimal amount of configuration needed to have it preprocess DT sources, and then, after we have finished processing both DT and Kconfig we complete the target-specific configuration, and possibly change the toolchain.
+
+
+DTS应该接近kconfig，因为来自kconfig和dts的CONFIG_变量应该同时可用。
+
+DT系统使用C预处理器来满足代码生成需求。
+这会产生一个尴尬的鸡蛋问题，因为在我们对目标有更多了解之前，我们并不总是确切地知道用户需要哪个工具链，例如： 在DT和Kconfig之后。
+
+为了解决这个问题，我们找到了“一些”C工具链，通常使用预处理DT源所需的最少配置来配置它，然后，在我们完成DT和Kconfig的处理后，我们完成了特定于目标的配置，并且可能 改变工具链。
+
+Folders needed for conf/mconf files (kconfig has no method of redirecting all output files). conf/mconf needs to be run from a different directory because of: GH-3408
+conf / mconf文件所需的文件夹（kconfig没有重定向所有输出文件的方法）。 由于以下原因，需要从不同的目录运行conf / mconf：GH-3408
+
+
+
+Set environment variables so that Kconfig can prune Kconfig source files for other architectures 
+
+设置环境变量，以便Kconfig可以修剪其他体系结构的Kconfig源文件
+
+
+Allow out-of-tree users to add their own Kconfig python frontend targets by appending targets to the CMake list
+'EXTRA_KCONFIG_TARGETS' and setting variables named
+'EXTRA_KCONFIG_TARGET_COMMAND_FOR_<target>'
+
+允许out-of-tree用户通过将目标附加到CMake列表来添加他们自己的Kconfig python前端目标
+'EXTRA_KCONFIG_TARGETS'并设置名为的变量
+'EXTRA_KCONFIG_TARGET_COMMAND_FOR_<目标>'
+
+Support assigning Kconfig symbols on the command-line with CMake  cache variables prefixed with 'CONFIG_'. This feature is experimental and undocumented until it has undergone more  user-testing.
+
+支持在命令行上使用前缀为“CONFIG_”的CMake缓存变量分配Kconfig符号。 此功能是实验性的，没有记录，直到它经历了更多的用户测试。
+
+
+Bring in extra configuration files dropped in by the user or anyone else; make sure they are set at the end so we can override any other setting
+引入用户或其他任何人丢弃的额外配置文件; 确保它们设置在最后，以便我们可以覆盖任何其他设置
+
+Create a list of absolute paths to the .config sources from merge_config_files, which is a mix of absolute and relative paths.
+
+从merge_config_files创建.config源的绝对路径列表，merge_config_files是绝对路径和相对路径的混合。
+
+Calculate a checksum of merge_config_files to determine if we need to re-generate .config
+
+计算merge_config_files的校验和以确定是否需要重新生成.config
+
+Create a new .config if it does not exists, or if the checksum of the dependencies has changed
+
+如果它不存在，或者依赖项的校验和已更改，请创建新的.config
+
+Force CMAKE configure when the Kconfig sources or configuration files changes.
+强制CMAKE在Kconfig源或配置文件更改时进行配置。
+
+Remove the CLI Kconfig symbols from the namespace and CMakeCache.txt. If the symbols end up in DOTCONFIG they will be re-introduced to the namespace through 'import_kconfig'.
+
+从命名空间和CMakeCache.txt中删除CLI Kconfig符号。 如果符号最终在DOTCONFIG中，它们将通过'import_kconfig'重新引入命名空间。
+
+Parse the lines prefixed with CONFIG_ in the .config file from Kconfig
+从Kconfig解析.config文件中以CONFIG_为前缀的行
+
+# Is surrounded by quotes
+被引号包围
+
+
+
+Print warnings for symbols whose actual value doesn't match the assigned value
+
+打印实际值与指定值不匹配的符号的警告
+
+Print warnings for choices whose actual selection doesn't match the user selection
+为实际选择与用户选择不匹配的选项打印警告
+
+
+Hack: Force all symbols to be evaluated, to catch warnings generated during evaluation. Wait till the end to write the actual output files, so that we don't generate any output if there are warnings-turned-errors.
+Hack：强制评估所有符号，以捕获评估期间生成的警告。 等到最后才写出实际的输出文件，这样如果出现警告错误，我们就不会生成任何输出。
+
+
+Turn all warnings except for explicity whitelisted ones into errors. In articular, this will turn assignments to undefined Kconfig variables into errors.
+
+A warning is generated by this script whenever a symbol gets a different value than the one it was assigned. Keep that one as just a warning for now as well.
+
+将除明确列入白名单的警告之外的所有警告都转为错误。 特别是，这会将未定义的Kconfig变量的赋值转换为错误。
+
+只要符号获得的值与分配的值不同，此脚本就会生成警告。 暂时保留那个也只是一个警告。
+
+Write the merged configuration and the C header
+编写合并配置和C头
+
+Write the list of processed Kconfig sources to a file
+
+将已处理的Kconfig源列表写入文件
